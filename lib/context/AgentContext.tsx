@@ -4,7 +4,8 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { Agent, Transaction } from "@/types/domain";
-import { adjustBalance, listAgents } from "@/lib/services/agentService";
+import { adjustBalance, createAgent as createAgentService, listAgents } from "@/lib/services/agentService";
+import type { CreateAgentInput } from "@/lib/services/agentService";
 import { listTransactions, recordTransaction } from "@/lib/services/transactionService";
 import { getPolicyForAgent } from "@/lib/services/policyService";
 import { evaluatePolicy } from "@/lib/policy/evaluatePolicy";
@@ -20,6 +21,7 @@ interface AgentContextValue {
   isLoading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
+  createAgent: (input: CreateAgentInput) => Promise<Agent>;
   payAgent: (
     fromAgentId: string,
     toAgentId: string,
@@ -53,6 +55,15 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  const createAgent = useCallback(
+    async (input: CreateAgentInput) => {
+      const agent = await createAgentService(input);
+      await refresh();
+      return agent;
+    },
+    [refresh],
+  );
 
   const payAgent = useCallback(
     async (
@@ -96,7 +107,9 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <AgentContext.Provider value={{ agents, transactions, isLoading, error, refresh, payAgent }}>
+    <AgentContext.Provider
+      value={{ agents, transactions, isLoading, error, refresh, createAgent, payAgent }}
+    >
       {children}
     </AgentContext.Provider>
   );
