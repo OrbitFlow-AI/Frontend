@@ -21,6 +21,9 @@ const config: Config = {
       borderRadius: {
         lg: "0.75rem",
       },
+      fontFamily: {
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+      },
     },
   },
   plugins: [],
