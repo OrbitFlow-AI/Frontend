@@ -5,12 +5,14 @@ import { useEffect, useState } from "react";
 import type { Policy } from "@/types/domain";
 import { Button } from "@/components/ui/Button";
 import { getPolicyForAgent, savePolicyForAgent } from "@/lib/services/policyService";
+import { policySchema } from "@/lib/validation/policySchema";
 
 export function PolicyEditor({ agentId }: { agentId: string }) {
   const [policy, setPolicy] = useState<Policy | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let isMounted = true;
@@ -40,6 +42,18 @@ export function PolicyEditor({ agentId }: { agentId: string }) {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!policy) return;
+
+    const parsed = policySchema.safeParse(policy);
+    if (!parsed.success) {
+      const fieldErrors: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        fieldErrors[issue.path[0] as string] = issue.message;
+      }
+      setErrors(fieldErrors);
+      return;
+    }
+    setErrors({});
+
     setIsSaving(true);
     try {
       const saved = await savePolicyForAgent({
@@ -77,6 +91,9 @@ export function PolicyEditor({ agentId }: { agentId: string }) {
             onChange={(e) => setPolicy({ ...policy, maxPerTransaction: Number(e.target.value) })}
             className="mt-1 w-36 rounded-md border border-border bg-background px-3 py-2 text-sm text-slate-100"
           />
+          {errors.maxPerTransaction ? (
+            <p className="mt-1 text-xs text-danger">{errors.maxPerTransaction}</p>
+          ) : null}
         </div>
         <div>
           <label className="block text-xs text-muted">Daily cap</label>
@@ -87,6 +104,7 @@ export function PolicyEditor({ agentId }: { agentId: string }) {
             onChange={(e) => setPolicy({ ...policy, dailyCap: Number(e.target.value) })}
             className="mt-1 w-36 rounded-md border border-border bg-background px-3 py-2 text-sm text-slate-100"
           />
+          {errors.dailyCap ? <p className="mt-1 text-xs text-danger">{errors.dailyCap}</p> : null}
         </div>
       </div>
 
