@@ -6,6 +6,7 @@ import { Topbar } from "@/components/layout/Topbar";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { PayAgentForm } from "@/components/agents/PayAgentForm";
+import { PolicyEditor } from "@/components/agents/PolicyEditor";
 import { TransactionRow } from "@/components/transactions/TransactionRow";
 import { useAgentContext } from "@/lib/context/AgentContext";
 import { formatAmount } from "@/lib/utils/format";
@@ -49,6 +50,11 @@ export default function AgentDetailPage() {
         <Card className="lg:col-span-2">
           <h2 className="mb-3 text-sm font-medium text-slate-200">Send a payment</h2>
           <PayAgentForm fromAgent={agent} recipients={recipients} />
+        </Card>
+
+        <Card className="lg:col-span-3">
+          <h2 className="mb-3 text-sm font-medium text-slate-200">Spend policy</h2>
+          <PolicyEditor agentId={agent.id} />
         </Card>
 
         <Card className="lg:col-span-3">
