@@ -3,12 +3,19 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import type { Agent, Transaction } from "@/types/domain";
-import { adjustBalance, createAgent as createAgentService, listAgents } from "@/lib/services/agentService";
+import type { Agent, Network, Transaction } from "@/types/domain";
+import {
+  adjustBalance,
+  createAgent as createAgentService,
+  listAgents,
+  setWalletConnected,
+} from "@/lib/services/agentService";
 import type { CreateAgentInput } from "@/lib/services/agentService";
 import { listTransactions, recordTransaction } from "@/lib/services/transactionService";
 import { getPolicyForAgent } from "@/lib/services/policyService";
 import { evaluatePolicy } from "@/lib/policy/evaluatePolicy";
+import { connectPasskey } from "@/lib/services/smartAccountService";
+import { logger } from "@/lib/observability/logger";
 
 export interface PayAgentResult {
   allowed: boolean;
@@ -20,8 +27,11 @@ interface AgentContextValue {
   transactions: Transaction[];
   isLoading: boolean;
   error: string | null;
+  network: Network;
+  setNetwork: (network: Network) => void;
   refresh: () => Promise<void>;
   createAgent: (input: CreateAgentInput) => Promise<Agent>;
+  connectWallet: (agentId: string) => Promise<void>;
   payAgent: (
     fromAgentId: string,
     toAgentId: string,
@@ -37,20 +47,24 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [network, setNetwork] = useState<Network>(
+    (process.env.NEXT_PUBLIC_STELLAR_NETWORK as Network) || "testnet",
+  );
 
   const refresh = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const [agentList, txList] = await Promise.all([listAgents(), listTransactions()]);
+      const [agentList, txList] = await Promise.all([listAgents(network), listTransactions()]);
       setAgents(agentList);
       setTransactions(txList);
-    } catch {
+    } catch (cause) {
+      logger.error("Failed to load agent treasury data", { cause });
       setError("Failed to load agent treasury data.");
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [network]);
 
   useEffect(() => {
     refresh();
@@ -61,6 +75,15 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
       const agent = await createAgentService(input);
       await refresh();
       return agent;
+    },
+    [refresh],
+  );
+
+  const connectWallet = useCallback(
+    async (agentId: string) => {
+      await connectPasskey(agentId);
+      await setWalletConnected(agentId, true);
+      await refresh();
     },
     [refresh],
   );
@@ -77,6 +100,12 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
       const check = evaluatePolicy(policy, amount, toAgentId, todaysOutgoing);
 
       if (!check.allowed) {
+        logger.warn("Payment blocked by spend policy", {
+          fromAgentId,
+          toAgentId,
+          amount,
+          violatedRule: check.violatedRule,
+        });
         await recordTransaction({
           fromAgentId,
           toAgentId,
@@ -108,7 +137,18 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AgentContext.Provider
-      value={{ agents, transactions, isLoading, error, refresh, createAgent, payAgent }}
+      value={{
+        agents,
+        transactions,
+        isLoading,
+        error,
+        network,
+        setNetwork,
+        refresh,
+        createAgent,
+        connectWallet,
+        payAgent,
+      }}
     >
       {children}
     </AgentContext.Provider>
