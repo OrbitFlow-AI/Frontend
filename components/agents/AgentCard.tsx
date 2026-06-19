@@ -21,7 +21,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
   const budgetUsedPct = Math.min(100, Math.round(((agent.budget - agent.balance) / agent.budget) * 100));
 
   return (
-    <Link href={`/agents/${agent.id}`}>
+    <Link href={`/dashboard/agents/${agent.id}`}>
       <Card className="transition-colors hover:border-primary/60">
         <div className="flex items-start justify-between">
           <div>
