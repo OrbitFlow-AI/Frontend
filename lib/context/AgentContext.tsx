@@ -4,11 +4,17 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { Agent, Network, Transaction } from "@/types/domain";
-import { adjustBalance, createAgent as createAgentService, listAgents } from "@/lib/services/agentService";
+import {
+  adjustBalance,
+  createAgent as createAgentService,
+  listAgents,
+  setWalletConnected,
+} from "@/lib/services/agentService";
 import type { CreateAgentInput } from "@/lib/services/agentService";
 import { listTransactions, recordTransaction } from "@/lib/services/transactionService";
 import { getPolicyForAgent } from "@/lib/services/policyService";
 import { evaluatePolicy } from "@/lib/policy/evaluatePolicy";
+import { connectPasskey } from "@/lib/services/smartAccountService";
 
 export interface PayAgentResult {
   allowed: boolean;
@@ -24,6 +30,7 @@ interface AgentContextValue {
   setNetwork: (network: Network) => void;
   refresh: () => Promise<void>;
   createAgent: (input: CreateAgentInput) => Promise<Agent>;
+  connectWallet: (agentId: string) => Promise<void>;
   payAgent: (
     fromAgentId: string,
     toAgentId: string,
@@ -66,6 +73,15 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
       const agent = await createAgentService(input);
       await refresh();
       return agent;
+    },
+    [refresh],
+  );
+
+  const connectWallet = useCallback(
+    async (agentId: string) => {
+      await connectPasskey(agentId);
+      await setWalletConnected(agentId, true);
+      await refresh();
     },
     [refresh],
   );
@@ -122,6 +138,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
         setNetwork,
         refresh,
         createAgent,
+        connectWallet,
         payAgent,
       }}
     >
