@@ -4,9 +4,9 @@
 import { notFound, useParams } from "next/navigation";
 import { Topbar } from "@/components/layout/Topbar";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { PayAgentForm } from "@/components/agents/PayAgentForm";
 import { PolicyEditor } from "@/components/agents/PolicyEditor";
+import { WalletConnectButton } from "@/components/agents/WalletConnectButton";
 import { TransactionRow } from "@/components/transactions/TransactionRow";
 import { useAgentContext } from "@/lib/context/AgentContext";
 import { formatAmount } from "@/lib/utils/format";
@@ -41,9 +41,7 @@ export default function AgentDetailPage() {
           </p>
           <p className="mt-2 text-xs text-muted">Budget: {formatAmount(agent.budget, agent.asset)}</p>
           <div className="mt-3">
-            <Badge tone={agent.walletConnected ? "success" : "warning"}>
-              {agent.walletConnected ? "Wallet connected" : "Wallet not connected"}
-            </Badge>
+            <WalletConnectButton agent={agent} />
           </div>
         </Card>
 
