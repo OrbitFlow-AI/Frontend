@@ -2,6 +2,7 @@
 "use client";
 
 import { notFound, useParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Topbar } from "@/components/layout/Topbar";
 import { Card } from "@/components/ui/Card";
 import { PayAgentForm } from "@/components/agents/PayAgentForm";
@@ -10,6 +11,11 @@ import { WalletConnectButton } from "@/components/agents/WalletConnectButton";
 import { TransactionRow } from "@/components/transactions/TransactionRow";
 import { useAgentContext } from "@/lib/context/AgentContext";
 import { formatAmount } from "@/lib/utils/format";
+
+const BalanceHistoryChart = dynamic(() => import("@/components/agents/BalanceHistoryChart"), {
+  ssr: false,
+  loading: () => <p className="text-sm text-muted">Loading chart…</p>,
+});
 
 export default function AgentDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -46,6 +52,11 @@ export default function AgentDetailPage() {
         </Card>
 
         <Card className="lg:col-span-2">
+          <h2 className="mb-3 text-sm font-medium text-slate-200">Balance history</h2>
+          <BalanceHistoryChart currentBalance={agent.balance} />
+        </Card>
+
+        <Card className="lg:col-span-3">
           <h2 className="mb-3 text-sm font-medium text-slate-200">Send a payment</h2>
           <PayAgentForm fromAgent={agent} recipients={recipients} />
         </Card>
