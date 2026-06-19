@@ -1,0 +1,14 @@
+/* Tailwind layer entrypoint and minimal global resets shared by every route. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  background-color: #0b0f17;
+  color: #f8fafc;
+}
+
+* {
+  border-color: #1f2937;
+}
