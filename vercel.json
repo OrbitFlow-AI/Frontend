@@ -1,0 +1,11 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "env": {
+    "NEXT_PUBLIC_STELLAR_NETWORK": "testnet",
+    "NEXT_PUBLIC_HORIZON_URL": "https://horizon-testnet.stellar.org",
+    "NEXT_PUBLIC_SMART_ACCOUNT_KIT_APP_ID": "orbitflow",
+    "NEXT_PUBLIC_MOCK_LATENCY_MS": "400"
+  }
+}

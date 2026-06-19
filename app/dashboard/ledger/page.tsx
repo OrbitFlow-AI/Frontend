@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { LedgerFilters } from "@/components/transactions/LedgerFilters";
 import { TransactionRow } from "@/components/transactions/TransactionRow";
 import { useAgentContext } from "@/lib/context/AgentContext";
+import { filterTransactions } from "@/lib/transactions/filterTransactions";
 
 export default function LedgerPage() {
   const { agents, transactions, isLoading } = useAgentContext();
@@ -16,12 +17,7 @@ export default function LedgerPage() {
 
   const agentsById = useMemo(() => Object.fromEntries(agents.map((a) => [a.id, a])), [agents]);
 
-  const filtered = transactions.filter((tx) => {
-    const matchesAgent =
-      agentFilter === "all" || tx.fromAgentId === agentFilter || tx.toAgentId === agentFilter;
-    const matchesStatus = statusFilter === "all" || tx.status === statusFilter;
-    return matchesAgent && matchesStatus;
-  });
+  const filtered = filterTransactions(transactions, agentFilter, statusFilter);
 
   return (
     <>

@@ -1,4 +1,6 @@
 // Summary card for one agent treasury: balance, budget, network, and status badge.
+// Memoized since dashboard grids re-render this for every agent on each context refresh.
+import { memo } from "react";
 import Link from "next/link";
 import type { Agent } from "@/types/domain";
 import { Card } from "@/components/ui/Card";
@@ -17,7 +19,7 @@ const statusLabel: Record<Agent["status"], string> = {
   over_limit: "Over limit",
 };
 
-export function AgentCard({ agent }: { agent: Agent }) {
+export const AgentCard = memo(function AgentCard({ agent }: { agent: Agent }) {
   const budgetUsedPct = Math.min(100, Math.round(((agent.budget - agent.balance) / agent.budget) * 100));
 
   return (
@@ -52,4 +54,4 @@ export function AgentCard({ agent }: { agent: Agent }) {
       </Card>
     </Link>
   );
-}
+});
