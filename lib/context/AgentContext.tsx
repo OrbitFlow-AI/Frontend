@@ -5,7 +5,14 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { Agent, Transaction } from "@/types/domain";
 import { adjustBalance, listAgents } from "@/lib/services/agentService";
-import { listTransactions, recordSettledTransaction } from "@/lib/services/transactionService";
+import { listTransactions, recordTransaction } from "@/lib/services/transactionService";
+import { getPolicyForAgent } from "@/lib/services/policyService";
+import { evaluatePolicy } from "@/lib/policy/evaluatePolicy";
+
+export interface PayAgentResult {
+  allowed: boolean;
+  violatedRule?: Transaction["violatedRule"];
+}
 
 interface AgentContextValue {
   agents: Agent[];
@@ -13,7 +20,12 @@ interface AgentContextValue {
   isLoading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
-  payAgent: (fromAgentId: string, toAgentId: string, amount: number, memo: string) => Promise<void>;
+  payAgent: (
+    fromAgentId: string,
+    toAgentId: string,
+    amount: number,
+    memo: string,
+  ) => Promise<PayAgentResult>;
 }
 
 const AgentContext = createContext<AgentContextValue | null>(null);
@@ -43,19 +55,44 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   }, [refresh]);
 
   const payAgent = useCallback(
-    async (fromAgentId: string, toAgentId: string, amount: number, memo: string) => {
+    async (
+      fromAgentId: string,
+      toAgentId: string,
+      amount: number,
+      memo: string,
+    ): Promise<PayAgentResult> => {
+      const policy = await getPolicyForAgent(fromAgentId);
+      const todaysOutgoing = transactions.filter((tx) => tx.fromAgentId === fromAgentId);
+      const check = evaluatePolicy(policy, amount, toAgentId, todaysOutgoing);
+
+      if (!check.allowed) {
+        await recordTransaction({
+          fromAgentId,
+          toAgentId,
+          amount,
+          asset: "USDC",
+          memo,
+          status: "blocked",
+          violatedRule: check.violatedRule,
+        });
+        await refresh();
+        return { allowed: false, violatedRule: check.violatedRule };
+      }
+
       await adjustBalance(fromAgentId, -amount);
       await adjustBalance(toAgentId, amount);
-      await recordSettledTransaction({
+      await recordTransaction({
         fromAgentId,
         toAgentId,
         amount,
         asset: "USDC",
         memo,
+        status: "settled",
       });
       await refresh();
+      return { allowed: true };
     },
-    [refresh],
+    [refresh, transactions],
   );
 
   return (
