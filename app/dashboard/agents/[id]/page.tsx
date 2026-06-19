@@ -2,13 +2,20 @@
 "use client";
 
 import { notFound, useParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Topbar } from "@/components/layout/Topbar";
 import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { PayAgentForm } from "@/components/agents/PayAgentForm";
+import { PolicyEditor } from "@/components/agents/PolicyEditor";
+import { WalletConnectButton } from "@/components/agents/WalletConnectButton";
 import { TransactionRow } from "@/components/transactions/TransactionRow";
 import { useAgentContext } from "@/lib/context/AgentContext";
 import { formatAmount } from "@/lib/utils/format";
+
+const BalanceHistoryChart = dynamic(() => import("@/components/agents/BalanceHistoryChart"), {
+  ssr: false,
+  loading: () => <p className="text-sm text-muted">Loading chart…</p>,
+});
 
 export default function AgentDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -40,15 +47,23 @@ export default function AgentDetailPage() {
           </p>
           <p className="mt-2 text-xs text-muted">Budget: {formatAmount(agent.budget, agent.asset)}</p>
           <div className="mt-3">
-            <Badge tone={agent.walletConnected ? "success" : "warning"}>
-              {agent.walletConnected ? "Wallet connected" : "Wallet not connected"}
-            </Badge>
+            <WalletConnectButton agent={agent} />
           </div>
         </Card>
 
         <Card className="lg:col-span-2">
+          <h2 className="mb-3 text-sm font-medium text-slate-200">Balance history</h2>
+          <BalanceHistoryChart currentBalance={agent.balance} />
+        </Card>
+
+        <Card className="lg:col-span-3">
           <h2 className="mb-3 text-sm font-medium text-slate-200">Send a payment</h2>
           <PayAgentForm fromAgent={agent} recipients={recipients} />
+        </Card>
+
+        <Card className="lg:col-span-3">
+          <h2 className="mb-3 text-sm font-medium text-slate-200">Spend policy</h2>
+          <PolicyEditor agentId={agent.id} />
         </Card>
 
         <Card className="lg:col-span-3">
