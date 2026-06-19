@@ -3,7 +3,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import type { Agent, Transaction } from "@/types/domain";
+import type { Agent, Network, Transaction } from "@/types/domain";
 import { adjustBalance, createAgent as createAgentService, listAgents } from "@/lib/services/agentService";
 import type { CreateAgentInput } from "@/lib/services/agentService";
 import { listTransactions, recordTransaction } from "@/lib/services/transactionService";
@@ -20,6 +20,8 @@ interface AgentContextValue {
   transactions: Transaction[];
   isLoading: boolean;
   error: string | null;
+  network: Network;
+  setNetwork: (network: Network) => void;
   refresh: () => Promise<void>;
   createAgent: (input: CreateAgentInput) => Promise<Agent>;
   payAgent: (
@@ -37,12 +39,15 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [network, setNetwork] = useState<Network>(
+    (process.env.NEXT_PUBLIC_STELLAR_NETWORK as Network) || "testnet",
+  );
 
   const refresh = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const [agentList, txList] = await Promise.all([listAgents(), listTransactions()]);
+      const [agentList, txList] = await Promise.all([listAgents(network), listTransactions()]);
       setAgents(agentList);
       setTransactions(txList);
     } catch {
@@ -50,7 +55,7 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [network]);
 
   useEffect(() => {
     refresh();
@@ -108,7 +113,17 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AgentContext.Provider
-      value={{ agents, transactions, isLoading, error, refresh, createAgent, payAgent }}
+      value={{
+        agents,
+        transactions,
+        isLoading,
+        error,
+        network,
+        setNetwork,
+        refresh,
+        createAgent,
+        payAgent,
+      }}
     >
       {children}
     </AgentContext.Provider>
