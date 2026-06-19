@@ -15,6 +15,7 @@ import { listTransactions, recordTransaction } from "@/lib/services/transactionS
 import { getPolicyForAgent } from "@/lib/services/policyService";
 import { evaluatePolicy } from "@/lib/policy/evaluatePolicy";
 import { connectPasskey } from "@/lib/services/smartAccountService";
+import { logger } from "@/lib/observability/logger";
 
 export interface PayAgentResult {
   allowed: boolean;
@@ -57,7 +58,8 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
       const [agentList, txList] = await Promise.all([listAgents(network), listTransactions()]);
       setAgents(agentList);
       setTransactions(txList);
-    } catch {
+    } catch (cause) {
+      logger.error("Failed to load agent treasury data", { cause });
       setError("Failed to load agent treasury data.");
     } finally {
       setIsLoading(false);
@@ -98,6 +100,12 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
       const check = evaluatePolicy(policy, amount, toAgentId, todaysOutgoing);
 
       if (!check.allowed) {
+        logger.warn("Payment blocked by spend policy", {
+          fromAgentId,
+          toAgentId,
+          amount,
+          violatedRule: check.violatedRule,
+        });
         await recordTransaction({
           fromAgentId,
           toAgentId,
