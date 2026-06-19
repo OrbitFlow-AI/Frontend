@@ -23,21 +23,28 @@ export interface RecordTransactionInput {
   amount: number;
   asset: string;
   memo: string;
+  status: Transaction["status"];
+  violatedRule?: Transaction["violatedRule"];
 }
 
-export async function recordSettledTransaction(
-  input: RecordTransactionInput,
-): Promise<Transaction> {
+export async function recordTransaction(input: RecordTransactionInput): Promise<Transaction> {
   const transaction: Transaction = {
     id: `tx_${crypto.randomUUID().slice(0, 8)}`,
     fromAgentId: input.fromAgentId,
     toAgentId: input.toAgentId,
     amount: input.amount,
     asset: input.asset,
-    status: "settled",
+    status: input.status,
+    violatedRule: input.violatedRule,
     memo: input.memo,
     createdAt: new Date().toISOString(),
   };
   transactions = [...transactions, transaction];
   return mockDelay(transaction);
+}
+
+export async function recordSettledTransaction(
+  input: Omit<RecordTransactionInput, "status">,
+): Promise<Transaction> {
+  return recordTransaction({ ...input, status: "settled" });
 }
