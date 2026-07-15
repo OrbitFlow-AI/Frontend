@@ -45,7 +45,7 @@ describe("transactionsToCsv", () => {
 
   it("falls back to the raw agent id when the agent is unknown", () => {
     const csv = transactionsToCsv(transactions, {});
-    const [, row] = csv.split("\n");
+    const [, row = ""] = csv.split("\n");
     expect(row.startsWith("tx_1,agent_a,agent_b")).toBe(true);
   });
 });

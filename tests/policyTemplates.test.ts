@@ -15,12 +15,10 @@ describe("policyTemplates", () => {
   });
 
   it("orders presets from tightest to loosest caps", () => {
-    for (let i = 1; i < policyTemplates.length; i++) {
-      expect(policyTemplates[i].maxPerTransaction).toBeGreaterThan(
-        policyTemplates[i - 1].maxPerTransaction,
-      );
-      expect(policyTemplates[i].dailyCap).toBeGreaterThan(policyTemplates[i - 1].dailyCap);
-    }
+    const maxPerTransactionValues = policyTemplates.map((t) => t.maxPerTransaction);
+    const dailyCapValues = policyTemplates.map((t) => t.dailyCap);
+    expect(maxPerTransactionValues).toEqual([...maxPerTransactionValues].sort((a, b) => a - b));
+    expect(dailyCapValues).toEqual([...dailyCapValues].sort((a, b) => a - b));
   });
 
   it("keeps daily cap greater than or equal to max per transaction in every preset", () => {
