@@ -85,7 +85,7 @@ export function ListingCard({
 
       {status === "settled" ? <p className="mt-2 text-xs text-success">Purchase settled.</p> : null}
       {status === "blocked" ? (
-        <p className="mt-2 text-xs text-danger">Purchase blocked by buyer's spend policy.</p>
+        <p className="mt-2 text-xs text-danger">Purchase blocked by buyer&rsquo;s spend policy.</p>
       ) : null}
     </Card>
   );
