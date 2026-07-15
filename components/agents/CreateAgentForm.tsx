@@ -5,9 +5,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { useAgentContext } from "@/lib/context/AgentContext";
 import { createAgentSchema } from "@/lib/validation/agentSchema";
+import { useToast } from "@/lib/context/ToastContext";
 
 export function CreateAgentForm({ onCreated }: { onCreated: () => void }) {
   const { createAgent } = useAgentContext();
+  const { notify } = useToast();
   const [values, setValues] = useState({
     name: "",
     description: "",
@@ -32,7 +34,8 @@ export function CreateAgentForm({ onCreated }: { onCreated: () => void }) {
     setErrors({});
     setIsSubmitting(true);
     try {
-      await createAgent(parsed.data);
+      const agent = await createAgent(parsed.data);
+      notify(`${agent.name} provisioned.`, "success");
       onCreated();
     } finally {
       setIsSubmitting(false);

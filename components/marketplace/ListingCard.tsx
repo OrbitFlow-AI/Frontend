@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { formatAmount } from "@/lib/utils/format";
 import { useAgentContext } from "@/lib/context/AgentContext";
+import { useToast } from "@/lib/context/ToastContext";
 
 const categoryLabel: Record<MarketplaceListing["category"], string> = {
   api_access: "API Access",
@@ -26,6 +27,7 @@ export function ListingCard({
   buyers: Agent[];
 }) {
   const { payAgent } = useAgentContext();
+  const { notify } = useToast();
   const [buyerId, setBuyerId] = useState(buyers[0]?.id ?? "");
   const [status, setStatus] = useState<"idle" | "purchasing" | "settled" | "blocked">("idle");
 
@@ -34,6 +36,10 @@ export function ListingCard({
     setStatus("purchasing");
     const result = await payAgent(buyerId, listing.providerAgentId, listing.pricePerCall, `Purchased: ${listing.name}`);
     setStatus(result.allowed ? "settled" : "blocked");
+    notify(
+      result.allowed ? `Purchased ${listing.name}.` : "Purchase blocked by buyer's spend policy.",
+      result.allowed ? "success" : "danger",
+    );
   }
 
   return (
