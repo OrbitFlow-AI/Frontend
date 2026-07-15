@@ -13,12 +13,15 @@ import { AgentSearchBar } from "@/components/agents/AgentSearchBar";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { useAgentContext } from "@/lib/context/AgentContext";
 import { filterAgents } from "@/lib/agents/filterAgents";
+import { useKeyboardShortcut } from "@/lib/hooks/useKeyboardShortcut";
 
 export default function DashboardPage() {
   const { agents, transactions, isLoading, error } = useAgentContext();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<AgentStatus | "all">("all");
+
+  useKeyboardShortcut("c", () => setIsCreateOpen(true));
 
   const filteredAgents = filterAgents(agents, searchText, statusFilter);
   const agentsById = Object.fromEntries(agents.map((a) => [a.id, a]));
@@ -28,7 +31,11 @@ export default function DashboardPage() {
       <Topbar
         title="Agent Treasuries"
         subtitle="Every agent provisioned on this network"
-        actions={<Button onClick={() => setIsCreateOpen(true)}>Create Agent</Button>}
+        actions={
+          <Button onClick={() => setIsCreateOpen(true)} title="Shortcut: c">
+            Create Agent
+          </Button>
+        }
       />
       <main className="p-6">
         {isLoading ? (
