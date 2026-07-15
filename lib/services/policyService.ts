@@ -33,3 +33,8 @@ export async function savePolicyForAgent(input: SavePolicyInput): Promise<Policy
     : [...policies, updated];
   return mockDelay(updated);
 }
+
+export async function resetPolicies(): Promise<Policy[]> {
+  policies = createSeedPolicies();
+  return mockDelay(policies);
+}

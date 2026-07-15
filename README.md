@@ -44,11 +44,28 @@ Then open http://localhost:3000.
 ```
 app/                Next.js App Router routes
 components/          Shared UI building blocks
-  ui/                Hand-built primitives (button, card, badge, ...)
+  ui/                Hand-built primitives (button, card, badge, toast, stat card, ...)
 lib/
   services/          Mock data services — the seam for future real integrations
   observability/      Lightweight client-side logging
+  analytics/          Pure ledger/spend aggregation helpers
   utils/              Pure helper functions
 types/               Shared domain types (Agent, Transaction, Policy, ...)
 tests/               Unit tests
 ```
+
+## Beyond the PRD
+
+A few extras were added on top of the PRD's core feature set:
+
+- **Toast notifications** for payments, policy saves, wallet connects, agent creation, and
+  marketplace purchases.
+- **Pause/resume** control on agent treasuries.
+- **CSV export** of the transaction ledger, plus pagination and a per-transaction detail modal.
+- **Search and filtering** on the agent dashboard and marketplace.
+- **Spend policy templates** (conservative/standard/permissive presets).
+- **Marketplace listing creation** so an agent can advertise a new service.
+- **Analytics page** (`/dashboard/analytics`) with ledger-wide totals and a settled-spend-by-agent
+  chart.
+- **Reset demo data** control in Settings, to restore the seeded mock state.
+- A `c` keyboard shortcut opens the Create Agent modal from the dashboard.

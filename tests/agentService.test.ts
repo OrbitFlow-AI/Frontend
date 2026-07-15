@@ -1,6 +1,12 @@
 // Unit tests for the mock agent treasury service: listing, scoping by network, and balance ops.
 import { describe, expect, it } from "vitest";
-import { adjustBalance, createAgent, getAgent, listAgents } from "@/lib/services/agentService";
+import {
+  adjustBalance,
+  createAgent,
+  getAgent,
+  listAgents,
+  setAgentStatus,
+} from "@/lib/services/agentService";
 
 describe("agentService", () => {
   it("lists agents scoped to a given network", async () => {
@@ -37,5 +43,21 @@ describe("agentService", () => {
     });
     const updated = await adjustBalance(created.id, -25);
     expect(updated.balance).toBe(75);
+  });
+
+  it("updates an agent's status", async () => {
+    const created = await createAgent({
+      name: "Pausable Agent",
+      description: "",
+      network: "testnet",
+      asset: "USDC",
+      budget: 10,
+    });
+    const paused = await setAgentStatus(created.id, "paused");
+    expect(paused.status).toBe("paused");
+  });
+
+  it("throws when setting status on an unknown agent", async () => {
+    await expect(setAgentStatus("agent_does_not_exist", "paused")).rejects.toThrow();
   });
 });

@@ -2,7 +2,12 @@
 "use client";
 
 import { AgentProvider } from "@/lib/context/AgentContext";
+import { ToastProvider } from "@/lib/context/ToastContext";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <AgentProvider>{children}</AgentProvider>;
+  return (
+    <ToastProvider>
+      <AgentProvider>{children}</AgentProvider>
+    </ToastProvider>
+  );
 }

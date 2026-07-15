@@ -48,3 +48,8 @@ export async function recordSettledTransaction(
 ): Promise<Transaction> {
   return recordTransaction({ ...input, status: "settled" });
 }
+
+export async function resetTransactions(): Promise<Transaction[]> {
+  transactions = createSeedTransactions();
+  return mockDelay(transactions);
+}
