@@ -42,6 +42,15 @@ Derived from [PRD.md](./PRD.md). Frontend-only scope throughout; no contract or 
 
 ---
 
+## Phase 4 — Beyond the PRD
+
+| | |
+|---|---|
+| **Objective** | Layer operator-quality-of-life features on top of the feature-complete Phase 2/3 dashboard, without expanding the PRD's non-goals. |
+| **Deliverables** | • App-wide toast notification system for action feedback<br>• Agent pause/resume status control<br>• CSV export, pagination, and a detail modal for the transaction ledger<br>• Search/filter controls on the agent dashboard and marketplace<br>• Spend policy templates (conservative/standard/permissive)<br>• Marketplace listing creation flow<br>• Analytics route with ledger-wide totals and a settled-spend-by-agent chart<br>• "Reset demo data" control in Settings<br>• `c` keyboard shortcut to open Create Agent |
+| **Exit Criteria** | Every addition reuses the existing mock service boundary and component conventions; `npm run lint`, `npm run typecheck`, and `npm run test` all pass. |
+| **Complexity** | Medium |
+
 ## Summary Timeline
 
 | Phase | Name | Objective (short) | Complexity | Primary Output |
@@ -50,3 +59,4 @@ Derived from [PRD.md](./PRD.md). Frontend-only scope throughout; no contract or 
 | 1 | Core Loop | One agent paying another, end-to-end | Medium | Working proof of concept |
 | 2 | Feature Complete | All PRD core features + edge states | High | Feature-complete mock dashboard |
 | 3 | Production Hardening | Validation, tests, observability, deploy | High | Shippable, reviewable scaffold |
+| 4 | Beyond the PRD | Operator quality-of-life features | Medium | Richer mock dashboard |
