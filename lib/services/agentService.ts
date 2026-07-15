@@ -49,6 +49,16 @@ export async function adjustBalance(agentId: string, delta: number): Promise<Age
   return mockDelay(updated);
 }
 
+export async function setAgentStatus(
+  agentId: string,
+  status: Agent["status"],
+): Promise<Agent> {
+  agents = agents.map((agent) => (agent.id === agentId ? { ...agent, status } : agent));
+  const updated = agents.find((agent) => agent.id === agentId);
+  if (!updated) throw new Error(`Unknown agent: ${agentId}`);
+  return mockDelay(updated);
+}
+
 export async function setWalletConnected(agentId: string, connected: boolean): Promise<Agent> {
   agents = agents.map((agent) =>
     agent.id === agentId ? { ...agent, walletConnected: connected } : agent,
