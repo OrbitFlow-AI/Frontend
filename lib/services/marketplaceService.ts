@@ -30,3 +30,8 @@ export async function createListing(input: CreateListingInput): Promise<Marketpl
   listings = [...listings, listing];
   return mockDelay(listing);
 }
+
+export async function resetListings(): Promise<MarketplaceListing[]> {
+  listings = createSeedListings();
+  return mockDelay(listings);
+}
