@@ -7,6 +7,7 @@ import { Topbar } from "@/components/layout/Topbar";
 import { Card } from "@/components/ui/Card";
 import { LedgerFilters } from "@/components/transactions/LedgerFilters";
 import { TransactionRow } from "@/components/transactions/TransactionRow";
+import { ExportLedgerButton } from "@/components/transactions/ExportLedgerButton";
 import { useAgentContext } from "@/lib/context/AgentContext";
 import { filterTransactions } from "@/lib/transactions/filterTransactions";
 
@@ -21,7 +22,11 @@ export default function LedgerPage() {
 
   return (
     <>
-      <Topbar title="Transaction Ledger" subtitle="Every micropayment between agents" />
+      <Topbar
+        title="Transaction Ledger"
+        subtitle="Every micropayment between agents"
+        actions={<ExportLedgerButton transactions={filtered} agentsById={agentsById} />}
+      />
       <main className="p-6">
         <LedgerFilters
           agents={agents}
