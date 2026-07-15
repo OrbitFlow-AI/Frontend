@@ -59,6 +59,11 @@ export async function setAgentStatus(
   return mockDelay(updated);
 }
 
+export async function resetAgents(): Promise<Agent[]> {
+  agents = createSeedAgents();
+  return mockDelay(agents);
+}
+
 export async function setWalletConnected(agentId: string, connected: boolean): Promise<Agent> {
   agents = agents.map((agent) =>
     agent.id === agentId ? { ...agent, walletConnected: connected } : agent,
