@@ -10,16 +10,18 @@ import { Modal } from "@/components/ui/Modal";
 import { AgentCard } from "@/components/agents/AgentCard";
 import { CreateAgentForm } from "@/components/agents/CreateAgentForm";
 import { AgentSearchBar } from "@/components/agents/AgentSearchBar";
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { useAgentContext } from "@/lib/context/AgentContext";
 import { filterAgents } from "@/lib/agents/filterAgents";
 
 export default function DashboardPage() {
-  const { agents, isLoading, error } = useAgentContext();
+  const { agents, transactions, isLoading, error } = useAgentContext();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<AgentStatus | "all">("all");
 
   const filteredAgents = filterAgents(agents, searchText, statusFilter);
+  const agentsById = Object.fromEntries(agents.map((a) => [a.id, a]));
 
   return (
     <>
@@ -52,6 +54,9 @@ export default function DashboardPage() {
                 ))}
               </div>
             )}
+            <div className="mt-6">
+              <RecentActivity transactions={transactions} agentsById={agentsById} />
+            </div>
           </>
         )}
       </main>
