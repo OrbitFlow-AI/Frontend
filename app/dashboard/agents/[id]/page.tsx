@@ -39,14 +39,17 @@ export default function AgentDetailPage() {
     (tx) => tx.fromAgentId === agent.id || tx.toAgentId === agent.id,
   );
   const recipients = agents.filter((a) => a.id !== agent.id);
+  const agentId = agent.id;
+  const agentName = agent.name;
+  const agentStatus = agent.status;
 
   async function handleToggleStatus() {
-    if (agent.status === "paused") {
-      await resumeAgent(agent.id);
-      notify(`${agent.name} resumed.`, "success");
+    if (agentStatus === "paused") {
+      await resumeAgent(agentId);
+      notify(`${agentName} resumed.`, "success");
     } else {
-      await pauseAgent(agent.id);
-      notify(`${agent.name} paused.`, "warning");
+      await pauseAgent(agentId);
+      notify(`${agentName} paused.`, "warning");
     }
   }
 
