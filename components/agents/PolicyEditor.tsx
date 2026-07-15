@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { getPolicyForAgent, savePolicyForAgent } from "@/lib/services/policyService";
 import { policySchema } from "@/lib/validation/policySchema";
 import { useToast } from "@/lib/context/ToastContext";
+import { PolicyTemplatePicker } from "@/components/agents/PolicyTemplatePicker";
 
 export function PolicyEditor({ agentId }: { agentId: string }) {
   const { notify } = useToast();
@@ -75,6 +76,12 @@ export function PolicyEditor({ agentId }: { agentId: string }) {
 
   return (
     <form onSubmit={handleSave} className="space-y-3">
+      <PolicyTemplatePicker
+        onApply={(maxPerTransaction, dailyCap) =>
+          setPolicy({ ...policy, maxPerTransaction, dailyCap })
+        }
+      />
+
       <label className="flex items-center gap-2 text-sm text-slate-200">
         <input
           type="checkbox"
