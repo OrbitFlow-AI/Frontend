@@ -3,16 +3,23 @@
 "use client";
 
 import { useState } from "react";
+import type { AgentStatus } from "@/types/domain";
 import { Topbar } from "@/components/layout/Topbar";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { AgentCard } from "@/components/agents/AgentCard";
 import { CreateAgentForm } from "@/components/agents/CreateAgentForm";
+import { AgentSearchBar } from "@/components/agents/AgentSearchBar";
 import { useAgentContext } from "@/lib/context/AgentContext";
+import { filterAgents } from "@/lib/agents/filterAgents";
 
 export default function DashboardPage() {
   const { agents, isLoading, error } = useAgentContext();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState<AgentStatus | "all">("all");
+
+  const filteredAgents = filterAgents(agents, searchText, statusFilter);
 
   return (
     <>
@@ -29,11 +36,23 @@ export default function DashboardPage() {
         ) : agents.length === 0 ? (
           <p className="text-sm text-muted">No agents have been provisioned yet.</p>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {agents.map((agent) => (
-              <AgentCard key={agent.id} agent={agent} />
-            ))}
-          </div>
+          <>
+            <AgentSearchBar
+              searchText={searchText}
+              statusFilter={statusFilter}
+              onSearchTextChange={setSearchText}
+              onStatusFilterChange={setStatusFilter}
+            />
+            {filteredAgents.length === 0 ? (
+              <p className="text-sm text-muted">No agents match this search.</p>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredAgents.map((agent) => (
+                  <AgentCard key={agent.id} agent={agent} />
+                ))}
+              </div>
+            )}
+          </>
         )}
       </main>
 
