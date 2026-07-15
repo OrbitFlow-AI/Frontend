@@ -1,11 +1,16 @@
 // Summary card for one agent treasury: balance, budget, network, and status badge.
 // Memoized since dashboard grids re-render this for every agent on each context refresh.
-import { memo } from "react";
+"use client";
+
+import { memo, useState } from "react";
 import Link from "next/link";
 import type { Agent } from "@/types/domain";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { formatAmount } from "@/lib/utils/format";
+import { useAgentContext } from "@/lib/context/AgentContext";
+import { useToast } from "@/lib/context/ToastContext";
 
 const statusTone: Record<Agent["status"], "success" | "warning" | "danger"> = {
   active: "success",
@@ -20,7 +25,27 @@ const statusLabel: Record<Agent["status"], string> = {
 };
 
 export const AgentCard = memo(function AgentCard({ agent }: { agent: Agent }) {
+  const { pauseAgent, resumeAgent } = useAgentContext();
+  const { notify } = useToast();
+  const [isToggling, setIsToggling] = useState(false);
   const budgetUsedPct = Math.min(100, Math.round(((agent.budget - agent.balance) / agent.budget) * 100));
+
+  async function handleToggleStatus(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsToggling(true);
+    try {
+      if (agent.status === "paused") {
+        await resumeAgent(agent.id);
+        notify(`${agent.name} resumed.`, "success");
+      } else {
+        await pauseAgent(agent.id);
+        notify(`${agent.name} paused.`, "warning");
+      }
+    } finally {
+      setIsToggling(false);
+    }
+  }
 
   return (
     <Link href={`/dashboard/agents/${agent.id}`}>
@@ -46,10 +71,22 @@ export const AgentCard = memo(function AgentCard({ agent }: { agent: Agent }) {
           </div>
         </div>
 
-        <div className="mt-3 flex items-center gap-2 text-xs text-muted">
-          <span className="uppercase">{agent.network}</span>
-          <span>·</span>
-          <span>{agent.walletConnected ? "Wallet connected" : "Wallet not connected"}</span>
+        <div className="mt-3 flex items-center justify-between gap-2 text-xs text-muted">
+          <div className="flex items-center gap-2">
+            <span className="uppercase">{agent.network}</span>
+            <span>·</span>
+            <span>{agent.walletConnected ? "Wallet connected" : "Wallet not connected"}</span>
+          </div>
+          {agent.status !== "over_limit" ? (
+            <Button
+              variant="secondary"
+              onClick={handleToggleStatus}
+              disabled={isToggling}
+              className="px-2 py-1 text-xs"
+            >
+              {agent.status === "paused" ? "Resume" : "Pause"}
+            </Button>
+          ) : null}
         </div>
       </Card>
     </Link>
