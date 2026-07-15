@@ -5,11 +5,14 @@ import { notFound, useParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { Topbar } from "@/components/layout/Topbar";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { PayAgentForm } from "@/components/agents/PayAgentForm";
 import { PolicyEditor } from "@/components/agents/PolicyEditor";
 import { WalletConnectButton } from "@/components/agents/WalletConnectButton";
 import { TransactionRow } from "@/components/transactions/TransactionRow";
 import { useAgentContext } from "@/lib/context/AgentContext";
+import { useToast } from "@/lib/context/ToastContext";
 import { formatAmount } from "@/lib/utils/format";
 
 const BalanceHistoryChart = dynamic(() => import("@/components/agents/BalanceHistoryChart"), {
@@ -19,7 +22,8 @@ const BalanceHistoryChart = dynamic(() => import("@/components/agents/BalanceHis
 
 export default function AgentDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { agents, transactions, isLoading } = useAgentContext();
+  const { agents, transactions, isLoading, pauseAgent, resumeAgent } = useAgentContext();
+  const { notify } = useToast();
 
   if (isLoading) {
     return <p className="p-6 text-sm text-muted">Loading agent…</p>;
@@ -36,6 +40,16 @@ export default function AgentDetailPage() {
   );
   const recipients = agents.filter((a) => a.id !== agent.id);
 
+  async function handleToggleStatus() {
+    if (agent.status === "paused") {
+      await resumeAgent(agent.id);
+      notify(`${agent.name} resumed.`, "success");
+    } else {
+      await pauseAgent(agent.id);
+      notify(`${agent.name} paused.`, "warning");
+    }
+  }
+
   return (
     <>
       <Topbar title={agent.name} subtitle={agent.description} />
@@ -46,8 +60,15 @@ export default function AgentDetailPage() {
             {formatAmount(agent.balance, agent.asset)}
           </p>
           <p className="mt-2 text-xs text-muted">Budget: {formatAmount(agent.budget, agent.asset)}</p>
-          <div className="mt-3">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <WalletConnectButton agent={agent} />
+            {agent.status === "over_limit" ? (
+              <Badge tone="danger">Over limit</Badge>
+            ) : (
+              <Button variant="secondary" onClick={handleToggleStatus} className="text-xs">
+                {agent.status === "paused" ? "Resume agent" : "Pause agent"}
+              </Button>
+            )}
           </div>
         </Card>
 
