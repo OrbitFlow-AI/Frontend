@@ -8,6 +8,7 @@ import {
   adjustBalance,
   createAgent as createAgentService,
   listAgents,
+  setAgentStatus,
   setWalletConnected,
 } from "@/lib/services/agentService";
 import type { CreateAgentInput } from "@/lib/services/agentService";
@@ -32,6 +33,8 @@ interface AgentContextValue {
   refresh: () => Promise<void>;
   createAgent: (input: CreateAgentInput) => Promise<Agent>;
   connectWallet: (agentId: string) => Promise<void>;
+  pauseAgent: (agentId: string) => Promise<void>;
+  resumeAgent: (agentId: string) => Promise<void>;
   payAgent: (
     fromAgentId: string,
     toAgentId: string,
@@ -83,6 +86,22 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
     async (agentId: string) => {
       await connectPasskey(agentId);
       await setWalletConnected(agentId, true);
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const pauseAgent = useCallback(
+    async (agentId: string) => {
+      await setAgentStatus(agentId, "paused");
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const resumeAgent = useCallback(
+    async (agentId: string) => {
+      await setAgentStatus(agentId, "active");
       await refresh();
     },
     [refresh],
@@ -147,6 +166,8 @@ export function AgentProvider({ children }: { children: React.ReactNode }) {
         refresh,
         createAgent,
         connectWallet,
+        pauseAgent,
+        resumeAgent,
         payAgent,
       }}
     >
