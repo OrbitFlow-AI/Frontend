@@ -6,9 +6,11 @@ import { useState } from "react";
 import type { Agent } from "@/types/domain";
 import { Button } from "@/components/ui/Button";
 import { useAgentContext } from "@/lib/context/AgentContext";
+import { useToast } from "@/lib/context/ToastContext";
 
 export function PayAgentForm({ fromAgent, recipients }: { fromAgent: Agent; recipients: Agent[] }) {
   const { payAgent } = useAgentContext();
+  const { notify } = useToast();
   const [toAgentId, setToAgentId] = useState(recipients[0]?.id ?? "");
   const [amount, setAmount] = useState(10);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,6 +32,10 @@ export function PayAgentForm({ fromAgent, recipients }: { fromAgent: Agent; reci
         "Simulated agent-to-agent payment",
       );
       setResult(outcome);
+      notify(
+        outcome.allowed ? "Payment settled." : `Payment blocked by rule: ${outcome.violatedRule}`,
+        outcome.allowed ? "success" : "danger",
+      );
     } finally {
       setIsSubmitting(false);
     }

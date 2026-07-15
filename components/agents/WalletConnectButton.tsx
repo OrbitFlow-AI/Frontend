@@ -7,9 +7,11 @@ import type { Agent } from "@/types/domain";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { useAgentContext } from "@/lib/context/AgentContext";
+import { useToast } from "@/lib/context/ToastContext";
 
 export function WalletConnectButton({ agent }: { agent: Agent }) {
   const { connectWallet } = useAgentContext();
+  const { notify } = useToast();
   const [isConnecting, setIsConnecting] = useState(false);
 
   if (agent.walletConnected) {
@@ -20,6 +22,7 @@ export function WalletConnectButton({ agent }: { agent: Agent }) {
     setIsConnecting(true);
     try {
       await connectWallet(agent.id);
+      notify("Smart Account passkey connected.", "success");
     } finally {
       setIsConnecting(false);
     }
